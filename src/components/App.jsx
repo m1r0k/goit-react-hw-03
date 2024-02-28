@@ -15,23 +15,20 @@ export default function App () {
     }
   )
 
-  const [nextId, setNextId] = useState(() => {
-    const savedNextId = localStorage.getItem('nextId');
-    return savedNextId ? parseInt(savedNextId) : 1;
-  });
-
   const [filter, setFilter] = useState('');
 
   const addContact = (newContact) => {
-    setContacts((prevContacts) => {
-      return [
-        ...prevContacts,
-        {id: `id-${nextId}`,
-        ...newContact}
-      ];
-    });
-    setNextId((prevId) => prevId + 1);
-  };
+    const isDuplicateNumber = contacts.some((contact) => contact.number === newContact.number);
+    if (isDuplicateNumber) {
+      alert('This phone number already exists!');
+    } else {
+      setContacts((prevContacts) => {
+        return [
+          ...prevContacts, newContact
+        ];
+      });
+    };
+  }
 
   const deleteContact = (contactId) => {
     setContacts((prevContacts) => {
@@ -47,10 +44,6 @@ export default function App () {
   useEffect(() => {
     localStorage.setItem('contacts', JSON.stringify(contacts));
   }, [contacts]);
-
-  useEffect(() => {
-    localStorage.setItem('nextId', nextId);
-  }, [nextId]);
 
   return (
     <div>

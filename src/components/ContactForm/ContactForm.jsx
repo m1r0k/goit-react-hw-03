@@ -2,6 +2,7 @@ import css from './ContactForm.module.css'
 import { useId } from 'react';
 import { Formik, Form, Field, ErrorMessage} from 'formik';
 import * as Yup from 'yup';
+import { nanoid } from 'nanoid';
 
 const phoneRegExp = /^(\d{3}-\d{2}-\d{2})$/;;
 const contactSchema = Yup.object().shape({
@@ -13,26 +14,23 @@ export default function ContactForm ({ onAdd }) {
     const contactNameFieldId = useId();
     const numberFieldId = useId();
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const handleSubmit = (values, actions) => {
         onAdd({
-            name: e.target.elements.name.value,
-            phone: e.target.elements.number.value
+                id: nanoid(),
+                name: values.name,
+                number: values.number
         });
-        e.target.reset();
+        actions.resetForm();
     };
 
     return (
         <Formik initialValues={{
-            id: '',
             name: '',
             number: ''
         }} validationSchema={contactSchema}
-            onSubmit={(values, actions) => {
-            onAdd(values);
-            actions.resetForm();
-        }}>
-            <Form className={css.form} onSubmit={handleSubmit}>
+            onSubmit={handleSubmit}
+        >
+            <Form className={css.form}>
                 <div className={css.div}>
                     <label htmlFor={contactNameFieldId}>Name</label>
                     <Field className={css.input} name='name' id={contactNameFieldId} placeholder="Name" />

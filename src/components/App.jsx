@@ -1,50 +1,63 @@
 import { useState, useEffect } from 'react';
-import './App.css';
-import Description from './Description/Description';
-import Options from './Options/Options';
-import Feedback from './Feedback/Feedback';
+import css from './App.module.css';
+import ContactForm from './ContactForm/ContactForm';
+import ContactList from './ContactList/ContactList';
+import Filter from './SearchBox/SearchBox';
+import initialContacts from './data/contactBook.json';
 
-export default function App() {
-  const [clicks, setClicks] = useState(() => {
-    const savedClicks = localStorage.getItem('click');
-    if (savedClicks) {
-      return JSON.parse(savedClicks);
-    };
-    return {
-      good: 0,
-      neutral: 0,
-      bad: 0,
-    };
-  })
+export default function App () {
 
-  useEffect(() => {
-    localStorage.setItem('click', JSON.stringify(clicks));
-  }, [clicks]);
+  const [contacts, setContacts] = useState(() => {
+    const savedContacts = localStorage.getItem('contacts');
+    if (savedContacts) {
+      return JSON.parse(savedContacts);
+    } else {return initialContacts};
+    }
+  )
 
-  const handleClick = (key) => {
-    setClicks({
-      ...clicks,
-      [key]: clicks[key] + 1,
+  const [nextId, setNextId] = useState(() => {
+    const savedNextId = localStorage.getItem('nextId');
+    return savedNextId ? parseInt(savedNextId) : 1;
+  });
+
+  const [filter, setFilter] = useState('');
+
+  const addContact = (newContact) => {
+    setContacts((prevContacts) => {
+      return [
+        ...prevContacts,
+        {id: `id-${nextId}`,
+        ...newContact}
+      ];
+    });
+    setNextId((prevId) => prevId + 1);
+  };
+
+  const deleteContact = (contactId) => {
+    setContacts((prevContacts) => {
+      return prevContacts.filter((contact) => contact.id !== contactId);
     });
   };
-    
-  const resetClick = () => {
-    setClicks({
-      good: 0,
-      neutral: 0,
-      bad: 0,
-    })
-  };
 
-  const totalClicks = clicks.good + clicks.neutral + clicks.bad;
+  const visibleContacts = contacts.filter(
+    (contact) => contact.name &&
+      contact.name.toLowerCase().includes(filter.toLowerCase())
+  );
 
-  const persentOfPositive = Math.round(((totalClicks - clicks.bad) / totalClicks) * 100);
-  
+  useEffect(() => {
+    localStorage.setItem('contacts', JSON.stringify(contacts));
+  }, [contacts]);
+
+  useEffect(() => {
+    localStorage.setItem('nextId', nextId);
+  }, [nextId]);
+
   return (
-    <>
-      <Description />
-      <Options handleClick={handleClick} totalClicks={totalClicks} resetClick={resetClick}/>
-      <Feedback clicks={clicks} totalClicks={totalClicks} persentOfPositive={persentOfPositive} />
-    </>
+    <div>
+      <h1 className={css.header}>Phonebook</h1>
+      <ContactForm onAdd={addContact} />
+      <Filter value={filter} onFilter={setFilter} />
+      <ContactList contacts={visibleContacts} onDelete={deleteContact} />
+    </div>
   );
 }
